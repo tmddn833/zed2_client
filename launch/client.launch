@@ -1,0 +1,48 @@
+<launch>
+    <arg name="is_bag" default="false"/>
+    <arg name="run_edt" default="true"/>
+    <arg name="bag_file" value="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>
+<!--    <arg name="bag_file" value="/media/jbs/ssd/bag_zed/outdoor/single_target/compressed/314_upper.bag"/>-->
+
+    <param name ="/use_sim_time" value="$(arg is_bag)"/>
+
+    <!-- for /tf_static in bag mode -->
+    <group if = "$(arg is_bag)">
+        <!-- bag play -->
+        <node name="play_for_zed_client" pkg="rosbag" type="play" output="log"
+              args="--clock -r 1.0 -s 0 $(arg bag_file)" >
+        </node>
+
+        <param name="zed2_description"
+               command="$(find xacro)/xacro '$(find zed_wrapper)/urdf/zed_descr.urdf.xacro'
+                    camera_name:=zed2
+                    camera_model:=zed2"/>
+
+        <node name="zed2_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
+            <remap from="robot_description" to="zed2_description" />
+        </node>
+    </group>
+
+
+    <node name="zed_client_node" type="zed2_client_node" pkg="zed2_client" output = "screen">
+        <rosparam file="$(find zed2_client)/param/default.yaml" command="load"  />
+    </node>
+
+    <node pkg="rviz" type="rviz" name="rviz_zed_client" args="-d $(find zed2_client)/rviz/zed_client.rviz" output="log" />
+    <node pkg="rosservice" type="rosservice" name="set_log_level"
+          args="call --wait /rviz_zed_client/set_logger_level 'ros' 'FATAL'    " />
+    <node pkg="rqt_console" type="rqt_console" name="rqt_console"  />
+
+        <!-- EDT -->
+    <include file="$(find octomap_server)/launch/octomap_edt_server_zed.launch" if ="$(arg run_edt)">
+        <arg name = "point_topic" value="/zed_client_node/points_masked"/>
+        <arg name = "is_bag" value="$(arg is_bag)"/>
+        <arg name = "play_bag" value="false"/>
+        <arg name = "rviz" value="false"/>
+        <arg name = "max_z" value="4"/>
+        <arg name = "min_z" value="-7"/>
+    </include>
+
+
+
+</launch>
