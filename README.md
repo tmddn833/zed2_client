@@ -93,9 +93,9 @@ roslaunch zed2_client client.launch is_bag:=true
 ### 2. Assumptions 
 
 * **Accept** : if there is o newly observed object with same zed labeling, match it.
-* **Accept** : two objects with hsv color difference smaller than `matching_select_prior_color_diff` and `matching_select_prev_distance_diff`
+* **Accept** : two objects with hsv color difference smaller than `target_detection/assumption/color_accept` and `target_detection/assumption/dist_accept`
   will have an advantage by having only the velocity cost.
-* **Reject** : two objects having distance difference larger than `matching_rejection_prior_dist_diff`.
-* **Reject** : two objects having color difference larger than  `matching_rejection_prior_color_diff`. If lighting conditions are varying, set large number..
+* **Reject** : two objects having distance difference larger than `target_detection/assumption/dist_reject`.
+* **Reject** : two objects having color difference larger than  `target_detection/assumption/color_reject`. 
 
 
