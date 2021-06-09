@@ -3,9 +3,12 @@ ___
 
 ![image](img/zed_client2.png)
 
-## Features
+## Features 
 
 ![diagram](img/diagram.png)
+
+* All parameters are described in [yaml file](param/default.yaml)
+
 ### 1. Receiving compressed images only and creating points in a client computer 
 In an onboard system for ZED camera, 
 it is common to use jetson (server of ZED) leveraging nvidia gpu, along with small computer (client) such as NUC having better cpu.
@@ -21,13 +24,21 @@ and efforts to 2) keep track of detected objects, this package aims to enhance t
 We first identify {location, dominant color} from object topic `/zed2/zed_node/obj_det/objects`. 
 Then we [match](#matching-between-the-tracked-objects-and-newly-detected-objects) 
 them with the tracked objects until now (a.k.a targets) using various [metrics](#matching-score) and [assumptions](#assumptions).
+The new information of position and color will be collected with smoothing for reliability. 
+The trace of tracked objects is visualized in the topics `observation_filtered/target_*` with color encoding as the [left figure](#zed2_client).
 
-### 3. Removing pointcloud related with target objects (also with bleeding of stereo depth)
+### 3. Removing pointcloud related with target objects 
+In many robotic applications, it might be better to wipe out the pointcloud of the targets 
+(e.g. case: the target should not be considered as occupied region for planning purpose). 
+To accomplish this, three steps were implemented: 1) 2d-masking in image space,2) 3d-masking 
+using bounding box and extruding along z-axis, and 3) [speckle removal](https://pointclouds.org/documentation/tutorials/remove_outliers.html).
+Currently, the total process runs at about 10Hz for 1280 x 720 camera setting in i7 computer with 32GB RAM. 
+> You can turn off this function and remove the necessity of object topic by setting `mask_object` false. 
 
 
-## Installation 
+## Getting started
 
-### Dependencies
+### 1. Dependencies
 #### [compressed_depth_image_transport](http://wiki.ros.org/compressed_depth_image_transport)
 ```
  sudo apt-get install ros-${ROS_DISTRO}-compressed-depth-image-transport
@@ -63,23 +74,23 @@ catkin build zed2_client
 ```
 
 
-## Launch 
+### 2. Launch 
 
 ```
 roslaunch zed2_client client.launch is_bag:=true
 ```
-## Matching between the tracked objects and newly detected objects 
+## Matching between the tracked objects and newly detected objects (TBD)
 
-### Matching score
+### 1. Matching score
 
 #### Position 
 
 #### Velocity
 
-#### Color difference 
+#### HSV color difference 
 
 
-### Assumptions 
+### 2. Assumptions 
 
 * **Accept** : if there is o newly observed object with same zed labeling, match it.
 * **Accept** : two objects with hsv color difference smaller than `matching_select_prior_color_diff` and `matching_select_prev_distance_diff`
