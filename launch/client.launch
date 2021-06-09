@@ -1,7 +1,8 @@
 <launch>
     <arg name="is_bag" default="false"/>
     <arg name="run_edt" default="true"/>
-    <arg name="bag_file" value="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>
+    <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>
+    <arg name="rviz" default="true"/>
 <!--    <arg name="bag_file" value="/media/jbs/ssd/bag_zed/outdoor/single_target/compressed/314_upper.bag"/>-->
 
     <param name ="/use_sim_time" value="$(arg is_bag)"/>
@@ -28,7 +29,8 @@
         <rosparam file="$(find zed2_client)/param/default.yaml" command="load"  />
     </node>
 
-    <node pkg="rviz" type="rviz" name="rviz_zed_client" args="-d $(find zed2_client)/rviz/zed_client.rviz" output="log" />
+    <node pkg="rviz" type="rviz" name="rviz_zed_client" args="-d $(find zed2_client)/rviz/zed_client.rviz" output="log"
+          if ="$(arg rviz)"/>
     <node pkg="rosservice" type="rosservice" name="set_log_level"
           args="call --wait /rviz_zed_client/set_logger_level 'ros' 'FATAL'    " />
     <node pkg="rqt_console" type="rqt_console" name="rqt_console"  />

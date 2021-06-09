@@ -718,7 +718,7 @@ void Client::targetIdCallback(const ros::TimerEvent &event) {
             Pose targetPose;
             if (state.targetObjects[n].getFilteredPoseFromQueue(targetPose)){
                 tfBroadcasterPtr->sendTransform(targetPose.toTf(param.worldFrame,
-                                                                "target_" + to_string(n) + "_filtered", state.targetObjects[n].zedStamp ));
+                                                                "target_" + to_string(n) + "_filtered", state.targetObjects[n].clientLastUpdateStamp));
             }
 
 

@@ -10,11 +10,17 @@ ___
 In an onboard system for ZED camera, 
 it is common to use jetson (server of ZED) leveraging nvidia gpu, along with small computer (client) such as NUC having better cpu.
 In this case, the Ethernet networking is not feasible for transmitting pointcloud in real time (less than 1Hz in case of 720HD).   
-Instead, the compressed RGB and depth can be transported to NUC from jetson at about 10Hz (assuming png compression lever 1 for depth image). 
+Instead, the compressed RGB and depth can be transported to NUC from jetson at about 10Hz (assuming png compression level 1 for depth image). 
 Considering this network limit and computation capability of NUC, this package regenerates pointcloud in the NUC side. 
 The decompression process is internalized without using [republish](https://wiki.ros.org/image_transport#republish) node for efficiency. 
 > This package assumes that RGB is in jepg compression and depth in png (no openni depth mode). Please observe this when running zed_wrapper in the server side.  
-### 2. Filtering and tracking objects of interests (single and dual target only supported)
+
+### 2. Filtering and tracking objects of interest (single and dual target only supported)
+Although ZED wrapper performs 1) [filtering](https://www.stereolabs.com/docs/ros/object-detection/), 
+and efforts to 2) keep track of detected objects, this package aims to enhance these two more robustly. 
+We first identify {location, dominant color} from object topic `/zed2/zed_node/obj_det/objects`. 
+Then we [match](#matching-between-the-tracked-objects-and-newly-detected-objects) 
+them with the tracked objects until now (a.k.a targets) using various [metrics](#matching-score) and [assumptions](#assumptions).
 
 ### 3. Removing pointcloud related with target objects (also with bleeding of stereo depth)
 
@@ -65,6 +71,13 @@ roslaunch zed2_client client.launch is_bag:=true
 ## Matching between the tracked objects and newly detected objects 
 
 ### Matching score
+
+#### Position 
+
+#### Velocity
+
+#### Color difference 
+
 
 ### Assumptions 
 
