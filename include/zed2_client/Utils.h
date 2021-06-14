@@ -20,6 +20,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <numeric>
 #include <algorithm>    // std::sort, std::stable_sort
+#include <mutex>
 
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
