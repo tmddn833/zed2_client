@@ -1,0 +1,82 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  auto_exposure_gain: true
+  auto_whitebalance: true
+  brightness: 4
+  contrast: 4
+  depth_confidence: 2
+  depth_texture_conf: 100
+  exposure: 100
+  gain: 100
+  gamma: 8
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        dictitems:
+          depth: !!python/object/new:dynamic_reconfigure.encoding.Config
+            dictitems:
+              depth_confidence: 2
+              depth_texture_conf: 100
+              groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+                state: []
+              id: 2
+              name: depth
+              parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+                state: []
+              parent: 0
+              point_cloud_freq: 15.0
+              state: true
+              type: ''
+            state: []
+          general: !!python/object/new:dynamic_reconfigure.encoding.Config
+            dictitems:
+              groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+                state: []
+              id: 1
+              name: general
+              parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+                state: []
+              parent: 0
+              pub_frame_rate: 15.0
+              state: true
+              type: ''
+            state: []
+          video: !!python/object/new:dynamic_reconfigure.encoding.Config
+            dictitems:
+              auto_exposure_gain: true
+              auto_whitebalance: true
+              brightness: 4
+              contrast: 4
+              exposure: 100
+              gain: 100
+              gamma: 8
+              groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+                state: []
+              hue: 0
+              id: 3
+              name: video
+              parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+                state: []
+              parent: 0
+              saturation: 4
+              sharpness: 4
+              state: true
+              type: ''
+              whitebalance_temperature: 28
+            state: []
+        state: []
+      id: 0
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      state: true
+      type: ''
+    state: []
+  hue: 0
+  point_cloud_freq: 15.0
+  pub_frame_rate: 15.0
+  saturation: 4
+  sharpness: 4
+  whitebalance_temperature: 28
+state: []

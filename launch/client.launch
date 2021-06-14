@@ -1,12 +1,16 @@
 <launch>
     <arg name="is_bag" default="false"/>
     <arg name="run_edt" default="true"/>
+    <arg name="realsense" default="false"/>
+
     <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>
     <arg name="rviz" default="true"/>
     <arg name="point_topic" default="/zed_client_node/points_masked"/>
 <!--    <arg name="bag_file" value="/media/jbs/ssd/bag_zed/outdoor/single_target/compressed/314_upper.bag"/>-->
 
-    <param name ="/use_sim_time" value="$(arg is_bag)"/>
+<!--    <param name ="/use_sim_time" value="$(arg is_bag)"/>-->
+    <param name ="/use_sim_time" value="true"/>
+
 
     <!-- for /tf_static in bag mode -->
     <group if = "$(arg is_bag)">
@@ -24,6 +28,18 @@
             <remap from="robot_description" to="zed2_description" />
         </node>
     </group>
+
+    <group unless="$(arg is_bag)">
+        <node name="dynamic_reconfigure_load" pkg="dynamic_reconfigure"
+              type="dynparam" args="load /zed2/zed_node/ $(find zed2_client)/config/zed_common_config.yaml" />
+        <node name="dynamic_reconfigure_load_compression" pkg="dynamic_reconfigure"
+              type="dynparam" args="load /zed2/zed_node/depth/depth_registered/compressedDepth $(find zed2_client)/config/zed_depth_compression.yaml" />
+    </group>
+
+
+
+<!--    <node name="clock_publisher" type="clock_publisher" pkg="zed2_client" output = "screen" unless="$(arg is_bag)">-->
+<!--    </node>-->
 
 
     <node name="zed_client_node" type="zed2_client_node" pkg="zed2_client" output = "screen">
@@ -47,6 +63,26 @@
         <arg name = "min_z" value="-7"/>
     </include>
 
+
+    <group ns = "d435" if =  "$(arg realsense)">
+        <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml" >
+            <arg name="device_type"           value="d435"/>
+            <arg name="serial_no"             value=""/>
+            <arg name="tf_prefix"                       value="d435"/>
+            <arg name="align_depth"           value="true"/>
+            <arg name="filters"               value="pointcloud"/>
+            <arg name="color_width"           value="960"/>
+            <arg name="color_height"          value="540"/>
+            <arg name="depth_width"           value="848"/>
+            <arg name="depth_height"          value="480"/>
+            <arg name="clip_distance"         value="5"/>
+            <arg name="json_file_path"      default="$(find zed2_client)/config/d435_high_accuracy.json"/>
+            <arg name="enable_pointcloud"         value="true"/>
+        </include>
+
+        <node pkg="tf" type="static_transform_publisher" name="zed_to_d435"
+                      args="0 0 0 -1.57 0 0 base_link d435_link 100"/>
+    </group>
 
 
 </launch>

@@ -41,3 +41,6 @@ target_link_libraries(test_subscriber ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 add_executable(zed2_client_node main.cpp src/Client.cpp  src/Utils.cpp  src/Client.cpp )
 target_link_libraries(zed2_client_node   ${catkin_LIBRARIES}  )
 
+add_executable(clock_publisher  test/ClockPublisher.cpp )
+target_link_libraries(clock_publisher   ${catkin_LIBRARIES}  )
+

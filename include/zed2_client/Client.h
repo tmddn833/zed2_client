@@ -97,7 +97,8 @@ namespace zed_client{
             Pose T_wc; // world to cam (optical)
             Pose T_cw;
             Pose T_wo; // world to object (x-forwarding)
-            ros::Time syncLastCallTime;
+            ros::Time syncLastCallSensorTime;
+            ros::Time synLastCallClientTime;
             pcl::PointCloud<pcl::PointXYZRGB> pclObjectsRemoved;
             pcl::PointCloud<pcl::PointXYZRGB> pclFurtherRemoved;
             std::vector<TrackedObject> targetObjects;

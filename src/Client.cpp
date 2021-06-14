@@ -315,9 +315,9 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
 
     // time recording
     ros::Time curSensorTime = depthCompPtr->header.stamp;
-    double fps = 1.0 / (curSensorTime - state.syncLastCallTime).toSec();
+    double fps = 1.0 / (curSensorTime - state.syncLastCallSensorTime).toSec();
     ROS_DEBUG("sync callback fps = %f " ,  fps);
-    state.syncLastCallTime = curSensorTime;
+    state.syncLastCallSensorTime = curSensorTime;
 
     // find tf from map to cam
     tf::StampedTransform transform;
@@ -415,9 +415,10 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
                              const sensor_msgs::CameraInfoConstPtr & camInfoPtr, const zed_interfaces::ObjectsStampedConstPtr & objPtr ) {
     // time recording
     ros::Time curSensorTime = depthCompPtr->header.stamp;
-    double fps = 1.0 / (curSensorTime - state.syncLastCallTime).toSec();
+    double fps = 1.0 / (curSensorTime - state.syncLastCallSensorTime).toSec();
     ROS_DEBUG("sync callback fps = %f " ,  fps);
-    state.syncLastCallTime = curSensorTime;
+    state.syncLastCallSensorTime = curSensorTime;
+    state.synLastCallClientTime = ros::Time::now();
 
     // find tf from map to cam
     tf::StampedTransform transform;
@@ -574,6 +575,8 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
             }
         }
 
+        // additional pointcloud (assume no objects filtering required for them)
+
         // speckle removal
         if (param.filterSpeckle) {
             int originalPoints = state.pclObjectsRemoved.points.size();
@@ -603,6 +606,7 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
     }
 
     // publish
+    ros::Time pubTime = state.synLastCallClientTime; //TODO
     pubRgbMaskImg.publish(imageToROSmsg(rgbImg, enc::BGR8, rgbCompPtr->header.frame_id, curSensorTime));
     pubDepthMaskImg.publish(imageToROSmsg(depthImg, enc::TYPE_32FC1, rgbCompPtr->header.frame_id, curSensorTime));
     pubPointsMasked.publish(state.pclObjectsRemoved);
