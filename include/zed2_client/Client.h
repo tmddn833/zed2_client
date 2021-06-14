@@ -16,6 +16,10 @@ namespace zed_client{
             sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,sensor_msgs::CameraInfo ,zed_interfaces::ObjectsStamped>
             CompressedImageMaskBbSync;
 
+    typedef message_filters::sync_policies::ApproximateTime<
+            sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,sensor_msgs::CameraInfo ,
+            zed_interfaces::ObjectsStamped, sensor_msgs::PointCloud2>
+            CompressedImageMaskBbPclSync;
 
     typedef message_filters::sync_policies::ApproximateTime<
             sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,sensor_msgs::CameraInfo >
@@ -95,6 +99,7 @@ namespace zed_client{
         struct State{
             bool isAllTargetsTracked = false;
             Pose T_wc; // world to cam (optical)
+            Pose T_cd; // zed cam to d435 pointcloud frame
             Pose T_cw;
             Pose T_wo; // world to object (x-forwarding)
             ros::Time syncLastCallSensorTime;
@@ -118,7 +123,8 @@ namespace zed_client{
         message_filters::Subscriber<sensor_msgs::CompressedImage> * subDepthComp;
         message_filters::Subscriber<zed_interfaces::ObjectsStamped> *subZedOd;
         message_filters::Subscriber<sensor_msgs::CameraInfo> *subCamInfo;
-        message_filters::Synchronizer<CompressedImageMaskBbSync>* subSync;
+        message_filters::Subscriber<sensor_msgs::PointCloud2> *subAdditionalPcl;
+        message_filters::Synchronizer<CompressedImageMaskBbPclSync>* subSync;
         message_filters::Synchronizer<CompressedImageSync>* subSyncSimple;
 
         tf::TransformListener* tfListenerPtr;
@@ -144,7 +150,8 @@ namespace zed_client{
         void zedSyncCallback(const sensor_msgs::CompressedImageConstPtr &,
                              const sensor_msgs::CompressedImageConstPtr &,
                              const sensor_msgs::CameraInfoConstPtr &,
-                             const zed_interfaces::ObjectsStampedConstPtr &);
+                             const zed_interfaces::ObjectsStampedConstPtr &,
+                             const sensor_msgs::PointCloud2ConstPtr &);
 
         void zedSyncCallback(const sensor_msgs::CompressedImageConstPtr &,
                              const sensor_msgs::CompressedImageConstPtr &,
