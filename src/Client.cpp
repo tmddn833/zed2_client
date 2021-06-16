@@ -197,6 +197,7 @@ Client::Client() :nh("~"), it (nh) {
     // paramter parsing
     nh.param<string>("world_frame_id",param.worldFrame,"map");
     nh.param<bool>("mask_object",param.filterObject,true);
+    nh.param<bool>("additional_pcl",param.additionalPcl,true);
 
     nh.param("target_tracking/n_target",param.nTarget,2);
     nh.param("target_tracking/height_offset_from_box_center",param.heightOffsetFromBbCenter,0.5f);
@@ -229,11 +230,26 @@ Client::Client() :nh("~"), it (nh) {
     subRgbComp = new message_filters::Subscriber<sensor_msgs::CompressedImage>(nh,"/zed2/zed_node/rgb/image_rect_color/compressed",1);
     subZedOd = new message_filters::Subscriber<zed_interfaces::ObjectsStamped>(nh,"/zed2/zed_node/obj_det/objects",1);
     subCamInfo = new message_filters::Subscriber<sensor_msgs::CameraInfo>(nh,"/zed2/zed_node/rgb/camera_info",1);
+    subAdditionalPcl = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh,"/d435/depth/color/points",5);
+
     if (param.filterObject) {
-        subSync = new message_filters::Synchronizer<CompressedImageMaskBbSync>(CompressedImageMaskBbSync(10),
-                                                                               *this->subRgbComp, *this->subDepthComp,
-                                                                               *this->subCamInfo, *this->subZedOd);
-        subSync->registerCallback(boost::bind(&Client::zedSyncCallback, this, _1, _2, _3, _4));
+        if (param.additionalPcl){
+
+            subSyncPcl = new message_filters::Synchronizer<CompressedImageMaskBbPclSync>(CompressedImageMaskBbPclSync(10),
+                                                                                         *this->subRgbComp, *this->subDepthComp,
+                                                                                         *this->subCamInfo, *this->subZedOd,
+                                                                                         *this->subAdditionalPcl);
+
+            subSyncPcl->registerCallback(boost::bind(&Client::zedPclSyncCallback, this, _1, _2, _3, _4, _5));
+
+        }else{
+            subSync = new message_filters::Synchronizer<CompressedImageMaskBbSync>(CompressedImageMaskBbSync(10),
+                                                                                         *this->subRgbComp, *this->subDepthComp,
+                                                                                         *this->subCamInfo, *this->subZedOd
+                                                                                         );
+
+            subSync->registerCallback(boost::bind(&Client::zedSyncCallback, this, _1, _2, _3, _4));
+        }
     }else{
 
         subSyncSimple = new message_filters::Synchronizer<CompressedImageSync>(CompressedImageSync(10),
@@ -312,7 +328,6 @@ float Client::matchingCost(const TrackedObject &priorObj, const DetectedObject &
 
 void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCompPtr, const sensor_msgs::CompressedImageConstPtr & depthCompPtr,
                              const sensor_msgs::CameraInfoConstPtr & camInfoPtr ) {
-
 
     // time recording
     ros::Time curSensorTime = depthCompPtr->header.stamp;
@@ -414,8 +429,11 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
 
 }
 
-void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCompPtr, const sensor_msgs::CompressedImageConstPtr & depthCompPtr,
-                             const sensor_msgs::CameraInfoConstPtr & camInfoPtr, const zed_interfaces::ObjectsStampedConstPtr & objPtr ) {
+
+
+void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbCompPtr, const sensor_msgs::CompressedImageConstPtr & depthCompPtr,
+                                const sensor_msgs::CameraInfoConstPtr & camInfoPtr, const zed_interfaces::ObjectsStampedConstPtr & objPtr ,
+                                const sensor_msgs::PointCloud2ConstPtr & pclPtr) {
     // time recording
     ros::Time curSensorTime = depthCompPtr->header.stamp;
     double fps = 1.0 / (curSensorTime - state.zedLastCallTime).toSec();
@@ -423,6 +441,7 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
     state.zedLastCallTime = curSensorTime;
     state.clientLastCallTime = ros::Time::now();
 
+    // find tf from map to cam
     tf::StampedTransform transform;
 
     // find tf from map to cam
@@ -438,6 +457,23 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
         ROS_ERROR("[ZedClient] no transform between map and object header. Cannot process further.");
         return;
     }
+
+    if (pclPtr != nullptr) {
+        // find tf from map to zed cam to d435
+        try {
+            // time 0 in lookup was intended
+            tfListenerPtr->lookupTransform(depthCompPtr->header.frame_id,
+                                           pclPtr->header.frame_id,
+                                           curSensorTime, transform);
+            state.T_cd = Pose(transform);
+
+        } catch (tf::TransformException &ex) {
+            ROS_ERROR_STREAM(ex.what());
+            ROS_ERROR("[ZedClient] no transform between zed and d435. Cannot process further.");
+            return;
+        }
+    }
+
 
     // find tf from map to object incoming frame
     try {
@@ -579,6 +615,27 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
                 state.pclObjectsRemoved.points.push_back(p);
             }
         }
+        if (pclPtr != nullptr) {
+            // additional pointcloud (assume no objects filtering required for them)
+            pcl::PointCloud<pcl::PointXYZRGB> pclCloud;
+            pcl::fromROSMsg(*pclPtr, pclCloud);
+            for (int n = 0; n < pclCloud.size(); n += pow(param.pclStride, 2)) {
+                auto point = pclCloud.points[n];
+                Point p_c = state.T_cd.poseMat * Point(point.x, point.y, point.z).toEigen();
+                pcl::PointXYZRGB pclPnt;
+                pclPnt.x = p_c.x;
+                pclPnt.y = p_c.y;
+                pclPnt.z = p_c.z;
+                pclPnt.r = point.r;
+                pclPnt.g = point.g;
+                pclPnt.b = point.b;
+                state.pclObjectsRemoved.points.push_back(pclPnt);
+            }
+
+            ROS_DEBUG("addition pcl added: %d", pclCloud.size());
+        }
+
+
 
         // speckle removal
         if (param.filterSpeckle) {
@@ -613,6 +670,23 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
     pubDepthMaskImg.publish(imageToROSmsg(depthImg, enc::TYPE_32FC1, rgbCompPtr->header.frame_id, curSensorTime));
     pubPointsMasked.publish(state.pclObjectsRemoved);
     pubPointRemoved.publish(state.pclFurtherRemoved);
+}
+
+void Client::zedPclSyncCallback(const sensor_msgs::CompressedImageConstPtr & compImgPtr,
+                                const sensor_msgs::CompressedImageConstPtr & depthImgPtr,
+                                const sensor_msgs::CameraInfoConstPtr & camPtr,
+                                const zed_interfaces::ObjectsStampedConstPtr & objPtr,
+                                const sensor_msgs::PointCloud2ConstPtr & pclPtr) {
+    syncSubRoutine(compImgPtr,depthImgPtr,camPtr,objPtr,pclPtr);
+}
+
+
+void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & compImgPtr,
+                                const sensor_msgs::CompressedImageConstPtr & depthImgPtr,
+                                const sensor_msgs::CameraInfoConstPtr & camPtr,
+                                const zed_interfaces::ObjectsStampedConstPtr & objPtr
+                                ) {
+    syncSubRoutine(compImgPtr,depthImgPtr,camPtr,objPtr, nullptr);
 }
 
 
