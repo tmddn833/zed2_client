@@ -1,11 +1,9 @@
 <launch>
     <arg name="is_bag" default="false"/>
     <arg name="run_edt" default="true"/>
-    <arg name="realsense" default="true"/>
+    <arg name="realsense" default="false"/>
 
-<!--    <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>-->
-    <arg name="bag_file" default="/home/jbs/bag/2021-06-16-20-36-23.bag"/>
-
+    <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>
     <arg name="rviz" default="true"/>
     <arg name="point_topic" default="/zed_client_node/points_masked"/>
 <!--    <arg name="bag_file" value="/media/jbs/ssd/bag_zed/outdoor/single_target/compressed/314_upper.bag"/>-->
@@ -47,7 +45,6 @@
     <node name="zed_client_node" type="zed2_client_node" pkg="zed2_client" output = "screen">
         <rosparam file="$(find zed2_client)/param/default.yaml" command="load"  />
         <remap from="~points_masked" to="$(arg point_topic)"/>
-        <param name="additional_pcl" value="$(arg realsense)"/>
     </node>
 
     <node pkg="rviz" type="rviz" name="rviz_zed_client" args="-d $(find zed2_client)/rviz/zed_client.rviz" output="log"
@@ -68,7 +65,7 @@
 
 
     <group ns = "d435" if =  "$(arg realsense)">
-        <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml"  unless="$(arg is_bag)">
+        <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml" >
             <arg name="device_type"           value="d435"/>
             <arg name="serial_no"             value=""/>
             <arg name="tf_prefix"                       value="d435"/>
@@ -82,14 +79,9 @@
             <arg name="json_file_path"      default="$(find zed2_client)/config/d435_high_accuracy.json"/>
             <arg name="enable_pointcloud"         value="true"/>
         </include>
-        <!--zed to d435 -->
+
         <node pkg="tf" type="static_transform_publisher" name="zed_to_d435"
                       args="0 0 0 -1.57 0 0 base_link d435_link 100"/>
-
-        <node pkg="tf" type="static_transform_publisher" name="d435_optical_tf"
-              args="-0.000, 0.015, 0.000 -0.498, 0.500, -0.500, 0.502 d435_link d435_color_optical_frame 100" if = "$(arg is_bag)"/>
-
-
     </group>
 
 

@@ -65,7 +65,7 @@ namespace zed_client{
 
     class Client{
         struct Param{
-
+            bool additionalPcl = false;
             bool filterObject = true;
             bool filterSpeckle = true;
 
@@ -124,7 +124,8 @@ namespace zed_client{
         message_filters::Subscriber<zed_interfaces::ObjectsStamped> *subZedOd;
         message_filters::Subscriber<sensor_msgs::CameraInfo> *subCamInfo;
         message_filters::Subscriber<sensor_msgs::PointCloud2> *subAdditionalPcl;
-        message_filters::Synchronizer<CompressedImageMaskBbPclSync>* subSync;
+        message_filters::Synchronizer<CompressedImageMaskBbPclSync>* subSyncPcl;
+        message_filters::Synchronizer<CompressedImageMaskBbSync>* subSync;
         message_filters::Synchronizer<CompressedImageSync>* subSyncSimple;
 
         tf::TransformListener* tfListenerPtr;
@@ -146,12 +147,24 @@ namespace zed_client{
         float matchingCost (const TrackedObject& priorObj,
                             const DetectedObject& newObj) const;
 
+        void syncSubRoutine(const sensor_msgs::CompressedImageConstPtr &,
+                                const sensor_msgs::CompressedImageConstPtr &,
+                                const sensor_msgs::CameraInfoConstPtr &,
+                                const zed_interfaces::ObjectsStampedConstPtr &,
+                                const sensor_msgs::PointCloud2ConstPtr &);
+
+        void zedPclSyncCallback(const sensor_msgs::CompressedImageConstPtr &,
+                                const sensor_msgs::CompressedImageConstPtr &,
+                                const sensor_msgs::CameraInfoConstPtr &,
+                                const zed_interfaces::ObjectsStampedConstPtr &,
+                                const sensor_msgs::PointCloud2ConstPtr &);
 
         void zedSyncCallback(const sensor_msgs::CompressedImageConstPtr &,
-                             const sensor_msgs::CompressedImageConstPtr &,
-                             const sensor_msgs::CameraInfoConstPtr &,
-                             const zed_interfaces::ObjectsStampedConstPtr &,
-                             const sensor_msgs::PointCloud2ConstPtr &);
+                                const sensor_msgs::CompressedImageConstPtr &,
+                                const sensor_msgs::CameraInfoConstPtr &,
+                                const zed_interfaces::ObjectsStampedConstPtr &
+                                );
+
 
         void zedSyncCallback(const sensor_msgs::CompressedImageConstPtr &,
                              const sensor_msgs::CompressedImageConstPtr &,
