@@ -4,7 +4,7 @@
     <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>
     <arg name="rviz" default="true"/>
     <arg name="point_topic" default="/zed_client_node/points_masked"/>
-<!--    <arg name="bag_file" value="/media/jbs/ssd/bag_zed/outdoor/single_target/compressed/314_upper.bag"/>-->
+<!--    <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/single_target/compressed/314_upper.bag"/>-->
 
     <param name ="/use_sim_time" value="$(arg is_bag)"/>
 

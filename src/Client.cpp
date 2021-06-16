@@ -313,11 +313,14 @@ float Client::matchingCost(const TrackedObject &priorObj, const DetectedObject &
 void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCompPtr, const sensor_msgs::CompressedImageConstPtr & depthCompPtr,
                              const sensor_msgs::CameraInfoConstPtr & camInfoPtr ) {
 
+
     // time recording
     ros::Time curSensorTime = depthCompPtr->header.stamp;
-    double fps = 1.0 / (curSensorTime - state.syncLastCallTime).toSec();
+    state.clientLastCallTime = ros::Time::now();
+
+    double fps = 1.0 / (curSensorTime - state.zedLastCallTime).toSec();
     ROS_DEBUG("sync callback fps = %f " ,  fps);
-    state.syncLastCallTime = curSensorTime;
+    state.zedLastCallTime = curSensorTime;
 
     // find tf from map to cam
     tf::StampedTransform transform;
@@ -415,12 +418,14 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
                              const sensor_msgs::CameraInfoConstPtr & camInfoPtr, const zed_interfaces::ObjectsStampedConstPtr & objPtr ) {
     // time recording
     ros::Time curSensorTime = depthCompPtr->header.stamp;
-    double fps = 1.0 / (curSensorTime - state.syncLastCallTime).toSec();
+    double fps = 1.0 / (curSensorTime - state.zedLastCallTime).toSec();
     ROS_DEBUG("sync callback fps = %f " ,  fps);
-    state.syncLastCallTime = curSensorTime;
+    state.zedLastCallTime = curSensorTime;
+    state.clientLastCallTime = ros::Time::now();
+
+    tf::StampedTransform transform;
 
     // find tf from map to cam
-    tf::StampedTransform transform;
     try {
         // time 0 in lookup was intended
         tfListenerPtr->lookupTransform(param.worldFrame, depthCompPtr->header.frame_id,
@@ -504,7 +509,8 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
         Eigen::Matrix3f R_bo = T_ob.poseMat.rotation().matrix().inverse();
         newObj.bbPose_w = T_ob;
         newObj.bbPose_w.applyTransform(state.T_wo);
-        tfBroadcasterPtr->sendTransform(newObj.bbPose_w.toTf(param.worldFrame,"object_" + to_string(obj.label_id), curSensorTime));
+//        tfBroadcasterPtr->sendTransform(newObj.bbPose_w.toTf(param.worldFrame,"object_" + to_string(obj.label_id), curSensorTime));
+        tfBroadcasterPtr->sendTransform(newObj.bbPose_w.toTf(param.worldFrame,"object_" + to_string(obj.label_id),state.clientLastCallTime));
         newObjects.push_back(newObj);
     }
 
