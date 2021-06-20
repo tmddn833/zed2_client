@@ -97,17 +97,19 @@ namespace zed_client{
         };
 
         struct State{
-            bool isAllTargetsTracked = false;
+            bool isAllTargetsTracked = false; // matched and queues are updated
             Pose T_wc; // world to cam (optical)
             Pose T_cd; // zed cam to d435 pointcloud frame
             Pose T_cw;
             Pose T_wo; // world to object (x-forwarding)
             ros::Time zedLastCallTime;
             ros::Time clientLastCallTime;
+            // visualization
             pcl::PointCloud<pcl::PointXYZRGB> pclObjectsRemoved;
             pcl::PointCloud<pcl::PointXYZRGB> pclFurtherRemoved;
             std::vector<TrackedObject> targetObjects;
             std::vector<DetectedObject> receivedObjects;
+            visualization_msgs::MarkerArray targetColors; // only color fields used
         };
 
 
@@ -136,6 +138,7 @@ namespace zed_client{
 
         ros::Publisher pubPointRemoved;
         ros::Publisher pubPointsMasked;
+        ros::Publisher pubCurTargetColors; // markerArray where stamp color field is only used
         vector<ros::Publisher> pubObservationFiltered;
         vector<ros::Publisher> pubTargetLinearPrediction;
 
@@ -170,7 +173,7 @@ namespace zed_client{
                              const sensor_msgs::CompressedImageConstPtr &,
                              const sensor_msgs::CameraInfoConstPtr &);
 
-
+        // timer callback
         void targetIdCallback(const ros::TimerEvent& event);
     public:
         Client();

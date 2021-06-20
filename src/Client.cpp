@@ -263,6 +263,7 @@ Client::Client() :nh("~"), it (nh) {
     pubDepthMaskImg =  it.advertise("depth_masked",1);
     pubPointsMasked = nh.advertise<pcl::PointCloud<pcl::PointXYZRGB>>("points_masked",1);
     pubPointRemoved = nh.advertise<pcl::PointCloud<pcl::PointXYZRGB>>("points_removed",1);
+    pubCurTargetColors = nh.advertise<visualization_msgs::MarkerArray>("target_colors",1);
 
     for(int n = 0 ; n < param.nTarget ; n++) {
         pubObservationFiltered.push_back(
@@ -790,19 +791,26 @@ void Client::targetIdCallback(const ros::TimerEvent &event) {
     }
 
     // publish
-    if (state.isAllTargetsTracked)
-        for (int n = 0; n < param.nTarget ; n++){
+    if (state.isAllTargetsTracked) {
+        state.targetColors.markers.clear();
+        for (int n = 0; n < param.nTarget; n++) {
             pubObservationFiltered[n].publish(
                     state.targetObjects[n].getObservationQueuePCL(param.worldFrame));
             pubTargetLinearPrediction[n].publish(state.targetObjects[n].getLinearPredictionPoint(param.worldFrame));
             Pose targetPose;
-            if (state.targetObjects[n].getFilteredPoseFromQueue(targetPose)){
+            if (state.targetObjects[n].getFilteredPoseFromQueue(targetPose)) {
                 tfBroadcasterPtr->sendTransform(targetPose.toTf(param.worldFrame,
-                                                                "target_" + to_string(n) + "_filtered", state.targetObjects[n].clientLastUpdateStamp));
+                                                                "target_" + to_string(n) + "_filtered",
+                                                                state.targetObjects[n].clientLastUpdateStamp));
             }
-
-
+            visualization_msgs::Marker marker;
+            marker.color.r = state.targetObjects[n].filteredColorQueue.back()[2];
+            marker.color.g = state.targetObjects[n].filteredColorQueue.back()[1];
+            marker.color.b = state.targetObjects[n].filteredColorQueue.back()[0];
+            state.targetColors.markers.push_back(marker);
         }
+        pubCurTargetColors.publish(state.targetColors);
+    }
 }
 
 
