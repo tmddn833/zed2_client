@@ -2,10 +2,11 @@
     <arg name="is_bag" default="false"/>
     <arg name="run_edt" default="true"/>
     <arg name="realsense" default="false"/>
+    <arg name ="zed_add" default="false"/>
 
     <arg name="param_file" default="$(find zed2_client)/param/forest_dual.yaml"/>
 
-    <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>
+    <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest0.bag"/>
 <!--    <arg name="bag_file" default="/media/jbs/Samsung_T5/bag/2021-06-21-08-59-35.bag"/>-->
 
     <arg name="rviz" default="true"/>
@@ -57,7 +58,7 @@
     <node name="zed_client_node" type="zed2_client_node" pkg="zed2_client" output = "screen" >
         <param name="target_filter_frame_prefix" value="$(arg target_prefix)"/>
         <param name="object_frame_prefix" value="$(arg object_prefix)"/>
-        <rosparam file="$(find zed2_client)/param/default.yaml" command="load"  />
+        <rosparam subst_value="true" file="$(arg param_file)" command="load"  />
 
         <remap from="~points_masked" to="$(arg point_topic)"/>
         <param name="additional_pcl" value="$(arg realsense)"/>

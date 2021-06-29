@@ -8,11 +8,12 @@ Panels:
         - /Status1
         - /TF1/Frames1
         - /ZED_ODOM1/Shape1
+        - /EDF1
         - /EDF1/Autocompute Value Bounds1
         - /TargetIdendifier1
         - /PointCloud21
       Splitter Ratio: 0.3399638235569
-    Tree Height: 844
+    Tree Height: 802
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -63,6 +64,7 @@ Visualization Manager:
       Label Scale: 5
       Link Size: 0.05000000074505806
       Name: ZedOdDisplay
+      Queue Size: 10
       Show Bounding Boxes: true
       Show Labels: true
       Show Skeletons: true
@@ -70,7 +72,8 @@ Visualization Manager:
       Transparency: 0.25
       Unreliable: false
       Value: false
-    - Class: rviz/Axes
+    - Alpha: 1
+      Class: rviz/Axes
       Enabled: true
       Length: 1
       Name: Axes
@@ -82,18 +85,24 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        bag_object_0:
-          Value: true
         base_link:
           Value: true
         map:
           Value: false
+        object_0:
+          Value: true
+        object_1:
+          Value: true
         odom:
           Value: false
+        target_0_filtered:
+          Value: true
         zed2_baro_link:
           Value: false
         zed2_camera_center:
           Value: false
+        zed2_imu_link:
+          Value: true
         zed2_left_camera_frame:
           Value: false
         zed2_left_camera_optical_frame:
@@ -108,16 +117,7 @@ Visualization Manager:
           Value: false
         zed2_temp_right_link:
           Value: false
-        zed_add_camera_center:
-          Value: true
-        zed_add_left_camera_frame:
-          Value: true
-        zed_add_left_camera_optical_frame:
-          Value: true
-        zed_add_right_camera_frame:
-          Value: true
-        zed_add_right_camera_optical_frame:
-          Value: true
+      Marker Alpha: 1
       Marker Scale: 3
       Name: TF
       Show Arrows: false
@@ -125,7 +125,9 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
-          bag_object_0:
+          object_0:
+            {}
+          object_1:
             {}
           odom:
             base_link:
@@ -133,6 +135,8 @@ Visualization Manager:
                 zed2_baro_link:
                   {}
                 zed2_left_camera_frame:
+                  zed2_imu_link:
+                    {}
                   zed2_left_camera_optical_frame:
                     {}
                   zed2_temp_left_link:
@@ -144,13 +148,8 @@ Visualization Manager:
                     {}
                   zed2_temp_right_link:
                     {}
-              zed_add_camera_center:
-                zed_add_left_camera_frame:
-                  zed_add_left_camera_optical_frame:
-                    {}
-                zed_add_right_camera_frame:
-                  zed_add_right_camera_optical_frame:
-                    {}
+          target_0_filtered:
+            {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -174,6 +173,7 @@ Visualization Manager:
       Keep: 10000
       Name: ZED_ODOM
       Position Tolerance: 0.10000000149011612
+      Queue Size: 10
       Shape:
         Alpha: 1
         Axes Length: 0.10000000149011612
@@ -199,24 +199,22 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: true
       Max Color: 255; 255; 255
-      Max Intensity: 3.003850221633911
       Min Color: 0; 0; 0
-      Min Intensity: -3.3961498737335205
       Name: EDF
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: false
       Size (Pixels): 3
       Size (m): 0.20000000298023224
-      Style: Boxes
+      Style: Flat Squares
       Topic: /octomap_talker/edf_slice_local
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: false
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /occupied_cells_vis_array
@@ -277,6 +275,7 @@ Visualization Manager:
             Z: 0.10000000149011612
           Pose Color: 255; 85; 255
           Pose Style: None
+          Queue Size: 10
           Radius: 0.019999999552965164
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -300,6 +299,7 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: Axes
+          Queue Size: 10
           Radius: 0.10000000149011612
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -312,6 +312,7 @@ Visualization Manager:
           Enabled: true
           History Length: 1
           Name: PREDICTION_EVAL_ON_TRAJ
+          Queue Size: 10
           Radius: 0.20000000298023224
           Topic: /auto_chaser/target_manager/target_point_on_pred_traj
           Unreliable: false
@@ -335,9 +336,7 @@ Visualization Manager:
           Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 4096
           Min Color: 0; 0; 0
-          Min Intensity: 0
           Name: PCL_OBJECTS_REMOVAL
           Position Transformer: XYZ
           Queue Size: 10
@@ -365,9 +364,7 @@ Visualization Manager:
           Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 4096
           Min Color: 0; 0; 0
-          Min Intensity: 0
           Name: PCL_REMOVAL
           Position Transformer: XYZ
           Queue Size: 10
@@ -386,6 +383,7 @@ Visualization Manager:
           Label Scale: 10
           Link Size: 0.10000000149011612
           Name: ZedOdDisplay
+          Queue Size: 10
           Show Bounding Boxes: true
           Show Labels: false
           Show Skeletons: true
@@ -416,9 +414,7 @@ Visualization Manager:
           Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 4096
           Min Color: 0; 0; 0
-          Min Intensity: 0
           Name: OBSERVATION_FILTERED_TARGET0
           Position Transformer: XYZ
           Queue Size: 10
@@ -446,9 +442,7 @@ Visualization Manager:
           Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 4096
           Min Color: 0; 0; 0
-          Min Intensity: 0
           Name: OBSERVATION_FILTERED_TARGET1
           Position Transformer: XYZ
           Queue Size: 10
@@ -467,6 +461,7 @@ Visualization Manager:
           Enabled: true
           History Length: 1
           Name: SIMPLE_PREDICTION_TARGET0
+          Queue Size: 10
           Radius: 0.30000001192092896
           Topic: /zed_client_node/simple_prediction/target_0
           Unreliable: false
@@ -477,6 +472,7 @@ Visualization Manager:
           Enabled: true
           History Length: 1
           Name: SIMPLE_PREDICTION_TARGET1
+          Queue Size: 10
           Radius: 0.30000001192092896
           Topic: /zed_client_node/simple_prediction/target_1
           Unreliable: false
@@ -522,9 +518,7 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: PointCloud2
       Position Transformer: XYZ
       Queue Size: 20
@@ -565,35 +559,35 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 7.405108451843262
+      Distance: 6.558192729949951
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.7475939989089966
-        Y: -0.05803358554840088
-        Z: -7.115151674952358e-6
+        X: 0.8507275581359863
+        Y: -0.9557573199272156
+        Z: -1.0453011782374233e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7597967386245728
+      Pitch: 0.7647961974143982
       Target Frame: base_link
-      Value: ThirdPersonFollower (rviz)
-      Yaw: 5.966700077056885
+      Yaw: 3.671703577041626
     Saved: ~
 Window Geometry:
   DEPTH:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 1052
+  Height: 1016
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000022b00000387fc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b00000387000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000002400440045005000540048005f004400450043004f004d00500052004500530053004500440000000385000000320000000000000000fb00000020005200470042005f004400450043004f004d00500052004500530053004500440000000397000000200000000000000000fb0000001c005200470042005f0043004f004d005000520045005300530045004400000002390000017e0000000000000000fb0000002000440045005000540048005f0043004f004d005000520045005300530045004400000002980000011f000000000000000000000001000002f900000387fc0200000004fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00440045005000540048010000003b0000018f0000001600fffffffc000001d0000001f2000000bb0100001afa000000000100000002fb000000060052004700420100000000ffffffff0000004e00fffffffb0000000a0056006900650077007301000006710000010f0000010000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000078000000039fc0100000002fb0000000800540069006d00650100000000000007800000024400fffffffb0000000800540069006d00650100000000000004500000000000000000000002500000038700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000022b0000035ffc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000035f000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000002400440045005000540048005f004400450043004f004d00500052004500530053004500440000000385000000320000000000000000fb00000020005200470042005f004400450043004f004d00500052004500530053004500440000000397000000200000000000000000fb0000001c005200470042005f0043004f004d005000520045005300530045004400000002390000017e0000000000000000fb0000002000440045005000540048005f0043004f004d005000520045005300530045004400000002980000011f000000000000000000000001000002f90000035ffc0200000004fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00440045005000540048010000003d0000017d0000001600fffffffc000001c0000001dc000000c10100001cfa000000000100000002fb000000060052004700420100000000ffffffff0000005100fffffffb0000000a0056006900650077007301000006710000010f0000010000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073800000039fc0100000002fb0000000800540069006d0065010000000000000738000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000002080000035f00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   RGB:
     collapsed: false
   Selection:
@@ -604,6 +598,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1920
-  X: 0
-  Y: 0
+  Width: 1848
+  X: 72
+  Y: 27
