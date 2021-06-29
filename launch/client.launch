@@ -5,6 +5,7 @@
     <arg name="param_file" default="$(find zed2_client)/param/forest_dual.yaml"/>
 
     <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>
+<!--    <arg name="bag_file" default="/media/jbs/Samsung_T5/bag/2021-06-21-08-59-35.bag"/>-->
 
     <arg name="rviz" default="true"/>
     <arg name="point_topic" default="/zed_client_node/points_masked"/>
