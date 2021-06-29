@@ -16,6 +16,12 @@ namespace zed_client{
             sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,sensor_msgs::CameraInfo ,zed_interfaces::ObjectsStamped>
             CompressedImageMaskBbSync;
 
+
+    typedef message_filters::sync_policies::ApproximateTime<
+            sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,sensor_msgs::CameraInfo ,zed_interfaces::ObjectsStamped,
+            sensor_msgs::CompressedImage, sensor_msgs::CameraInfo>
+            CompressedImageMaskBbAddSync;
+
     typedef message_filters::sync_policies::ApproximateTime<
             sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,sensor_msgs::CameraInfo ,
             zed_interfaces::ObjectsStamped, sensor_msgs::PointCloud2>
@@ -65,11 +71,15 @@ namespace zed_client{
 
     class Client{
         struct Param{
+            int syncQueueSize = 30;
             bool additionalPcl = false;
+            bool additionalDepth = false;
             bool filterObject = true;
             bool filterSpeckle = true;
 
             string worldFrame = "map";
+            string objectFramePrefix = "object_";
+            string targetFramePrefix = "target_";
 
             int nTarget = 2;
             float heightOffsetFromBbCenter = 0.5;
@@ -123,10 +133,13 @@ namespace zed_client{
         image_transport::ImageTransport it;
         message_filters::Subscriber<sensor_msgs::CompressedImage> * subRgbComp;
         message_filters::Subscriber<sensor_msgs::CompressedImage> * subDepthComp;
+        message_filters::Subscriber<sensor_msgs::CompressedImage> * subDepthCompAdd;
         message_filters::Subscriber<zed_interfaces::ObjectsStamped> *subZedOd;
         message_filters::Subscriber<sensor_msgs::CameraInfo> *subCamInfo;
+        message_filters::Subscriber<sensor_msgs::CameraInfo> *subCamInfoAdd;
         message_filters::Subscriber<sensor_msgs::PointCloud2> *subAdditionalPcl;
         message_filters::Synchronizer<CompressedImageMaskBbPclSync>* subSyncPcl;
+        message_filters::Synchronizer<CompressedImageMaskBbAddSync>* subSyncDepth;
         message_filters::Synchronizer<CompressedImageMaskBbSync>* subSync;
         message_filters::Synchronizer<CompressedImageSync>* subSyncSimple;
 
@@ -167,6 +180,14 @@ namespace zed_client{
                                 const sensor_msgs::CameraInfoConstPtr &,
                                 const zed_interfaces::ObjectsStampedConstPtr &
                                 );
+
+        void zedSyncDepthCallback(  const sensor_msgs::CompressedImageConstPtr & rgbCompPtr,
+                                    const sensor_msgs::CompressedImageConstPtr & depthCompPtr ,
+                                    const sensor_msgs::CameraInfoConstPtr & camInfoPtr,
+                                    const zed_interfaces::ObjectsStampedConstPtr & objPtr,
+                                    const sensor_msgs::CompressedImageConstPtr & depthCompAddPtr,
+                                    const sensor_msgs::CameraInfoConstPtr & camInfoAddPtr
+                                 );
 
 
         void zedSyncCallback(const sensor_msgs::CompressedImageConstPtr &,
