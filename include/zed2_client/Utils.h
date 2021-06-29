@@ -14,6 +14,7 @@
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <sensor_msgs/point_cloud2_iterator.h>
 #include <pcl/filters/radius_outlier_removal.h>
 #include <pcl_ros/point_cloud.h>
 #include <nav_msgs/Path.h>

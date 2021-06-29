@@ -195,9 +195,12 @@ Point TrackedObject::getLinearPredictionPoint() const {
 Client::Client() :nh("~"), it (nh) {
 
     // parameter parsing
+    nh.param<string>("target_filter_frame_prefix", param.targetFramePrefix, "target_");
+    nh.param<string>("object_frame_prefix", param.objectFramePrefix, "object_");
     nh.param<string>("world_frame_id",param.worldFrame,"map");
     nh.param<bool>("mask_object",param.filterObject,true);
     nh.param<bool>("additional_pcl",param.additionalPcl,true);
+    nh.param<bool>("additional_depth",param.additionalDepth,true);
 
     nh.param("target_tracking/n_target",param.nTarget,2);
     nh.param("target_tracking/height_offset_from_box_center",param.heightOffsetFromBbCenter,0.5f);
@@ -227,20 +230,32 @@ Client::Client() :nh("~"), it (nh) {
 
 
     subDepthComp = new message_filters::Subscriber<sensor_msgs::CompressedImage>(nh,"/zed2/zed_node/depth/depth_registered/compressedDepth",1);
+    subDepthCompAdd = new message_filters::Subscriber<sensor_msgs::CompressedImage>(nh,"/zed_add/zed_node/depth/depth_registered/compressedDepth",1);
+
     subRgbComp = new message_filters::Subscriber<sensor_msgs::CompressedImage>(nh,"/zed2/zed_node/rgb/image_rect_color/compressed",1);
     subZedOd = new message_filters::Subscriber<zed_interfaces::ObjectsStamped>(nh,"/zed2/zed_node/obj_det/objects",1);
+
     subCamInfo = new message_filters::Subscriber<sensor_msgs::CameraInfo>(nh,"/zed2/zed_node/rgb/camera_info",1);
+    subCamInfoAdd = new message_filters::Subscriber<sensor_msgs::CameraInfo>(nh,"/zed_add/zed_node/rgb/camera_info",1);
+
     subAdditionalPcl = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh,"/d435/depth/color/points",5);
 
     if (param.filterObject) {
         if (param.additionalPcl){
 
-            subSyncPcl = new message_filters::Synchronizer<CompressedImageMaskBbPclSync>(CompressedImageMaskBbPclSync(10),
+            subSyncPcl = new message_filters::Synchronizer<CompressedImageMaskBbPclSync>(CompressedImageMaskBbPclSync(param.syncQueueSize),
                                                                                          *this->subRgbComp, *this->subDepthComp,
                                                                                          *this->subCamInfo, *this->subZedOd,
                                                                                          *this->subAdditionalPcl);
 
             subSyncPcl->registerCallback(boost::bind(&Client::zedPclSyncCallback, this, _1, _2, _3, _4, _5));
+
+        }else if (param.additionalDepth){
+            subSyncDepth = new message_filters::Synchronizer<CompressedImageMaskBbAddSync>(CompressedImageMaskBbAddSync(param.syncQueueSize ),
+                                                                                               *this->subRgbComp, *this->subDepthComp,
+                                                                                           *this->subCamInfo, *this->subZedOd,
+                                                                                           *this->subDepthCompAdd, *this->subCamInfoAdd);
+            subSyncDepth->registerCallback(boost::bind(&Client::zedSyncDepthCallback,this,_1,_2,_3,_4,_5,_6));
 
         }else{
             subSync = new message_filters::Synchronizer<CompressedImageMaskBbSync>(CompressedImageMaskBbSync(10),
@@ -423,10 +438,7 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
     pubDepthMaskImg.publish(imageToROSmsg(depthImg, enc::TYPE_32FC1, rgbCompPtr->header.frame_id, curSensorTime));
     pubPointsMasked.publish(state.pclObjectsRemoved);
     pubPointRemoved.publish(state.pclFurtherRemoved);
-
-
 }
-
 
 
 void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbCompPtr, const sensor_msgs::CompressedImageConstPtr & depthCompPtr,
@@ -485,9 +497,9 @@ void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbComp
 
     // decompress and parse cam model
     cv::Mat depthImg,rgbImg;
-    bool isCompressionSuccess = pngDecompressDepth(depthCompPtr, depthImg) and
-                                jpegDecompressRgb(rgbCompPtr,rgbImg);
-    if (not isCompressionSuccess) {
+    bool isDecompressionSuccess = pngDecompressDepth(depthCompPtr, depthImg) and
+                                  jpegDecompressRgb(rgbCompPtr,rgbImg);
+    if (not isDecompressionSuccess) {
         ROS_ERROR("image decompression error");
         return;
     }
@@ -541,7 +553,7 @@ void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbComp
         Eigen::Matrix3f R_bo = T_ob.poseMat.rotation().matrix().inverse();
         newObj.bbPose_w = T_ob;
         newObj.bbPose_w.applyTransform(state.T_wo);
-        tfBroadcasterPtr->sendTransform(newObj.bbPose_w.toTf(param.worldFrame,"object_" + to_string(obj.label_id), curSensorTime));
+        tfBroadcasterPtr->sendTransform(newObj.bbPose_w.toTf(param.worldFrame, param.objectFramePrefix + to_string(obj.label_id), curSensorTime));
         newObjects.push_back(newObj);
     }
 
@@ -561,6 +573,8 @@ void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbComp
             ROS_WARN("not making pcl from decompressed depth until targets are locked. (publishPclAfterTargetLocked = true was set)");
     }else
         createPcl = true;
+
+
     if(createPcl) {
         Timer pclTimer;
         image_geometry::PinholeCameraModel model_;
@@ -610,9 +624,11 @@ void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbComp
                 state.pclObjectsRemoved.points.push_back(p);
             }
         }
+
+
         if (pclPtr != nullptr) {
             // additional pointcloud (assume no objects filtering required for them)
-            pcl::PointCloud<pcl::PointXYZRGB> pclCloud;
+            pcl::PointCloud<pcl::PointXYZ> pclCloud;
             pcl::fromROSMsg(*pclPtr, pclCloud);
             for (int n = 0; n < pclCloud.size(); n += pow(param.pclStride, 2)) {
                 auto point = pclCloud.points[n];
@@ -621,9 +637,6 @@ void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbComp
                 pclPnt.x = p_c.x;
                 pclPnt.y = p_c.y;
                 pclPnt.z = p_c.z;
-                pclPnt.r = point.r;
-                pclPnt.g = point.g;
-                pclPnt.b = point.b;
                 state.pclObjectsRemoved.points.push_back(pclPnt);
             }
 
@@ -667,6 +680,8 @@ void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbComp
     pubPointRemoved.publish(state.pclFurtherRemoved);
 }
 
+
+
 void Client::zedPclSyncCallback(const sensor_msgs::CompressedImageConstPtr & compImgPtr,
                                 const sensor_msgs::CompressedImageConstPtr & depthImgPtr,
                                 const sensor_msgs::CameraInfoConstPtr & camPtr,
@@ -675,6 +690,65 @@ void Client::zedPclSyncCallback(const sensor_msgs::CompressedImageConstPtr & com
     syncSubRoutine(compImgPtr,depthImgPtr,camPtr,objPtr,pclPtr);
 }
 
+
+void Client::zedSyncDepthCallback(const sensor_msgs::CompressedImageConstPtr &rgbCompPtr,
+                                  const sensor_msgs::CompressedImageConstPtr &depthCompPtr,
+                                  const sensor_msgs::CameraInfoConstPtr &camInfoPtr,
+                                  const zed_interfaces::ObjectsStampedConstPtr &objPtr,
+                                  const sensor_msgs::CompressedImageConstPtr &depthCompAddPtr,
+                                  const sensor_msgs::CameraInfoConstPtr &camInfoAddPtr) {
+
+    // decompress additional depth and make pcl
+    cv::Mat depthImg;
+    bool isDecompressionSuccess = pngDecompressDepth(depthCompPtr, depthImg);
+
+    if (not isDecompressionSuccess) {
+        ROS_ERROR("image decompression error");
+        return;
+    }
+
+    Timer pclTimer;
+    image_geometry::PinholeCameraModel model_;
+    model_.fromCameraInfo(*camInfoAddPtr);
+    double camera_cx = model_.cx();
+    double camera_cy = model_.cy();
+    double camera_fx = model_.fx();
+    double camera_fy = model_.fy();
+    double camera_factor = 1;
+
+    sensor_msgs::PointCloud2 pclAdd;
+    pclAdd.header = depthCompPtr->header;
+    sensor_msgs::PointCloud2Modifier modifier(pclAdd);
+    modifier.resize(depthImg.cols * depthImg.rows);
+    modifier.setPointCloud2FieldsByString(1,"xyz");
+
+    sensor_msgs::PointCloud2Iterator<float> iter_x(pclAdd, "x");
+    sensor_msgs::PointCloud2Iterator<float> iter_y(pclAdd, "y");
+    sensor_msgs::PointCloud2Iterator<float> iter_z(pclAdd, "z");
+
+    int nPnt = 0;
+    for (int r = 0; r < depthImg.rows; r += param.pclStride)
+        for (int c = 0; c < depthImg.cols; c += param.pclStride) {
+            float d = depthImg.ptr<float>(r)[c];
+            if (d != d) // nan
+                continue;
+
+            float z = double (d) / camera_factor;
+            float x = (c - camera_cx) * z / camera_fx;
+            float y = (r - camera_cy) * z / camera_fy;
+
+            *(iter_x) = x;
+            *(iter_y) = y;
+            *(iter_z) = z;
+            iter_x+=1; iter_y+=1; iter_z+=1;
+            nPnt ++;
+        }
+
+    modifier.resize(nPnt);
+    sensor_msgs::PointCloud2ConstPtr pclPtr = boost::make_shared<const sensor_msgs::PointCloud2>(pclAdd);
+    ROS_DEBUG("additional pcl constructed with %f ms ",pclTimer.stop());
+    syncSubRoutine(rgbCompPtr, depthCompPtr, camInfoPtr,objPtr,pclPtr);
+}
 
 void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & compImgPtr,
                                 const sensor_msgs::CompressedImageConstPtr & depthImgPtr,
@@ -793,7 +867,7 @@ void Client::targetIdCallback(const ros::TimerEvent &event) {
             Pose targetPose;
             if (state.targetObjects[n].getFilteredPoseFromQueue(targetPose)){
                 tfBroadcasterPtr->sendTransform(targetPose.toTf(param.worldFrame,
-                                                                "target_" + to_string(n) + "_filtered", state.targetObjects[n].clientLastUpdateStamp));
+                                                                param.targetFramePrefix+ to_string(n) + "_filtered", state.targetObjects[n].clientLastUpdateStamp));
             }
 
 

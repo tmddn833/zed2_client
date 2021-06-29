@@ -1,10 +1,11 @@
 <launch>
     <arg name="is_bag" default="false"/>
     <arg name="run_edt" default="true"/>
-    <arg name="realsense" default="true"/>
+    <arg name="realsense" default="false"/>
+    <arg name="zed_add" default="true"/>
 
 <!--    <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>-->
-    <arg name="bag_file" default="/home/jbs/bag/2021-06-16-20-36-23.bag"/>
+    <arg name="bag_file" default="/home/jbs/bag/2021-06-21-15-40-23.bag"/>
 
     <arg name="rviz" default="true"/>
     <arg name="point_topic" default="/zed_client_node/points_masked"/>
@@ -13,6 +14,11 @@
 <!--    <param name ="/use_sim_time" value="$(arg is_bag)"/>-->
     <param name ="/use_sim_time" value="true"/>
 
+    <arg name = "object_prefix" value="object_" if = "$(arg is_bag)"/>
+    <arg name = "object_prefix" value="bag_object_" unless = "$(arg is_bag)"/>
+
+    <arg name = "target_prefix" value="target_" if = "$(arg is_bag)"/>
+    <arg name = "target_prefix" value="bag_target_" unless = "$(arg is_bag)"/>
 
     <!-- for /tf_static in bag mode -->
     <group if = "$(arg is_bag)">
@@ -36,6 +42,9 @@
               type="dynparam" args="load /zed2/zed_node/ $(find zed2_client)/config/zed_common_config.yaml" />
         <node name="dynamic_reconfigure_load_compression" pkg="dynamic_reconfigure"
               type="dynparam" args="load /zed2/zed_node/depth/depth_registered/compressedDepth $(find zed2_client)/config/zed_depth_compression.yaml" />
+        <node if = "$(arg zed_add)" name="dynamic_reconfigure_load_compression_add" pkg="dynamic_reconfigure"
+              type="dynparam" args="load /zed_add/zed_node/depth/depth_registered/compressedDepth $(find zed2_client)/config/zed_add_depth_compression.yaml" />
+
     </group>
 
 
@@ -44,10 +53,13 @@
 <!--    </node>-->
 
 
-    <node name="zed_client_node" type="zed2_client_node" pkg="zed2_client" output = "screen">
+    <node name="zed_client_node" type="zed2_client_node" pkg="zed2_client" output = "screen" >
+        <param name="target_filter_frame_prefix" value="$(arg target_prefix)"/>
+        <param name="object_frame_prefix" value="$(arg object_prefix)"/>
         <rosparam file="$(find zed2_client)/param/default.yaml" command="load"  />
         <remap from="~points_masked" to="$(arg point_topic)"/>
         <param name="additional_pcl" value="$(arg realsense)"/>
+        <param name ="zed_add" value="$(arg zed_add)"/>
     </node>
 
     <node pkg="rviz" type="rviz" name="rviz_zed_client" args="-d $(find zed2_client)/rviz/zed_client.rviz" output="log"
@@ -79,7 +91,7 @@
             <arg name="depth_width"           value="848"/>
             <arg name="depth_height"          value="480"/>
             <arg name="clip_distance"         value="4"/>
-            <arg name="json_file_path"      default="$(find zed2_client)/config/d435_high_accuracy.json"/>
+<!--            <arg name="json_file_path"      default="$(find zed2_client)/config/d435_high_accuracy.json"/>-->
             <arg name="enable_pointcloud"         value="true"/>
         </include>
         <!--zed to d435 -->
