@@ -2,14 +2,15 @@
     <arg name="is_bag" default="false"/>
     <arg name="run_edt" default="true"/>
     <arg name="realsense" default="false"/>
-    <arg name="zed_add" default="true"/>
 
-<!--    <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>-->
-    <arg name="bag_file" default="/home/jbs/bag/2021-06-21-15-40-23.bag"/>
+    <arg name="param_file" default="$(find zed2_client)/param/forest_dual.yaml"/>
+
+    <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/dual_target/compressed/forest_budlegool.bag"/>
+<!--    <arg name="bag_file" default="/media/jbs/Samsung_T5/bag/2021-06-21-08-59-35.bag"/>-->
 
     <arg name="rviz" default="true"/>
     <arg name="point_topic" default="/zed_client_node/points_masked"/>
-<!--    <arg name="bag_file" value="/media/jbs/ssd/bag_zed/outdoor/single_target/compressed/314_upper.bag"/>-->
+<!--    <arg name="bag_file" default="/media/jbs/ssd/bag_zed/outdoor/single_target/compressed/314_upper.bag"/>-->
 
 <!--    <param name ="/use_sim_time" value="$(arg is_bag)"/>-->
     <param name ="/use_sim_time" value="true"/>
@@ -57,6 +58,7 @@
         <param name="target_filter_frame_prefix" value="$(arg target_prefix)"/>
         <param name="object_frame_prefix" value="$(arg object_prefix)"/>
         <rosparam file="$(find zed2_client)/param/default.yaml" command="load"  />
+
         <remap from="~points_masked" to="$(arg point_topic)"/>
         <param name="additional_pcl" value="$(arg realsense)"/>
         <param name ="zed_add" value="$(arg zed_add)"/>
@@ -66,7 +68,7 @@
           if ="$(arg rviz)"/>
     <node pkg="rosservice" type="rosservice" name="set_log_level"
           args="call --wait /rviz_zed_client/set_logger_level 'ros' 'FATAL'    " />
-    <node pkg="rqt_console" type="rqt_console" name="rqt_console"  />
+<!--    <node pkg="rqt_console" type="rqt_console" name="rqt_console"  />-->
 
         <!-- EDT -->
     <include file="$(find octomap_server)/launch/octomap_edt_server_zed.launch" if ="$(arg run_edt)">

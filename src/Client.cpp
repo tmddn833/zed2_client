@@ -197,6 +197,7 @@ Client::Client() :nh("~"), it (nh) {
     // parameter parsing
     nh.param<string>("target_filter_frame_prefix", param.targetFramePrefix, "target_");
     nh.param<string>("object_frame_prefix", param.objectFramePrefix, "object_");
+
     nh.param<string>("world_frame_id",param.worldFrame,"map");
     nh.param<bool>("mask_object",param.filterObject,true);
     nh.param<bool>("additional_pcl",param.additionalPcl,true);
@@ -278,6 +279,7 @@ Client::Client() :nh("~"), it (nh) {
     pubDepthMaskImg =  it.advertise("depth_masked",1);
     pubPointsMasked = nh.advertise<pcl::PointCloud<pcl::PointXYZRGB>>("points_masked",1);
     pubPointRemoved = nh.advertise<pcl::PointCloud<pcl::PointXYZRGB>>("points_removed",1);
+    pubCurTargetColors = nh.advertise<visualization_msgs::MarkerArray>("target_colors",1);
 
     for(int n = 0 ; n < param.nTarget ; n++) {
         pubObservationFiltered.push_back(
@@ -346,9 +348,11 @@ void Client::zedSyncCallback(const sensor_msgs::CompressedImageConstPtr & rgbCom
 
     // time recording
     ros::Time curSensorTime = depthCompPtr->header.stamp;
-    double fps = 1.0 / (curSensorTime - state.syncLastCallSensorTime).toSec();
+    state.clientLastCallTime = ros::Time::now();
+
+    double fps = 1.0 / (curSensorTime - state.zedLastCallTime).toSec();
     ROS_DEBUG("sync callback fps = %f " ,  fps);
-    state.syncLastCallSensorTime = curSensorTime;
+    state.zedLastCallTime = curSensorTime;
 
     // find tf from map to cam
     tf::StampedTransform transform;
@@ -446,13 +450,15 @@ void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbComp
                                 const sensor_msgs::PointCloud2ConstPtr & pclPtr) {
     // time recording
     ros::Time curSensorTime = depthCompPtr->header.stamp;
-    double fps = 1.0 / (curSensorTime - state.syncLastCallSensorTime).toSec();
+    double fps = 1.0 / (curSensorTime - state.zedLastCallTime).toSec();
     ROS_DEBUG("sync callback fps = %f " ,  fps);
-    state.syncLastCallSensorTime = curSensorTime;
-    state.synLastCallClientTime = ros::Time::now();
+    state.zedLastCallTime = curSensorTime;
+    state.clientLastCallTime = ros::Time::now();
 
     // find tf from map to cam
     tf::StampedTransform transform;
+
+    // find tf from map to cam
     try {
         // time 0 in lookup was intended
         tfListenerPtr->lookupTransform(param.worldFrame, depthCompPtr->header.frame_id,
@@ -554,6 +560,7 @@ void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbComp
         newObj.bbPose_w = T_ob;
         newObj.bbPose_w.applyTransform(state.T_wo);
         tfBroadcasterPtr->sendTransform(newObj.bbPose_w.toTf(param.worldFrame, param.objectFramePrefix + to_string(obj.label_id), curSensorTime));
+
         newObjects.push_back(newObj);
     }
 
@@ -644,6 +651,7 @@ void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbComp
         }
 
 
+
         // speckle removal
         if (param.filterSpeckle) {
             int originalPoints = state.pclObjectsRemoved.points.size();
@@ -673,7 +681,6 @@ void Client::syncSubRoutine(const sensor_msgs::CompressedImageConstPtr & rgbComp
     }
 
     // publish
-    ros::Time pubTime = state.synLastCallClientTime; //TODO
     pubRgbMaskImg.publish(imageToROSmsg(rgbImg, enc::BGR8, rgbCompPtr->header.frame_id, curSensorTime));
     pubDepthMaskImg.publish(imageToROSmsg(depthImg, enc::TYPE_32FC1, rgbCompPtr->header.frame_id, curSensorTime));
     pubPointsMasked.publish(state.pclObjectsRemoved);
@@ -859,19 +866,26 @@ void Client::targetIdCallback(const ros::TimerEvent &event) {
     }
 
     // publish
-    if (state.isAllTargetsTracked)
-        for (int n = 0; n < param.nTarget ; n++){
+    if (state.isAllTargetsTracked) {
+        state.targetColors.markers.clear();
+        for (int n = 0; n < param.nTarget; n++) {
             pubObservationFiltered[n].publish(
                     state.targetObjects[n].getObservationQueuePCL(param.worldFrame));
             pubTargetLinearPrediction[n].publish(state.targetObjects[n].getLinearPredictionPoint(param.worldFrame));
             Pose targetPose;
-            if (state.targetObjects[n].getFilteredPoseFromQueue(targetPose)){
+            if (state.targetObjects[n].getFilteredPoseFromQueue(targetPose)) {
                 tfBroadcasterPtr->sendTransform(targetPose.toTf(param.worldFrame,
                                                                 param.targetFramePrefix+ to_string(n) + "_filtered", state.targetObjects[n].clientLastUpdateStamp));
+
             }
-
-
+            visualization_msgs::Marker marker;
+            marker.color.r = state.targetObjects[n].filteredColorQueue.back()[2];
+            marker.color.g = state.targetObjects[n].filteredColorQueue.back()[1];
+            marker.color.b = state.targetObjects[n].filteredColorQueue.back()[0];
+            state.targetColors.markers.push_back(marker);
         }
+        pubCurTargetColors.publish(state.targetColors);
+    }
 }
 
 
