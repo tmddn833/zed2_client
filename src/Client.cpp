@@ -740,7 +740,8 @@ void Client::zedSyncDepthCallback(const sensor_msgs::CompressedImageConstPtr &rg
             if (d != d) // nan
                 continue;
 
-                float z = double (d) / camera_factor`X  n  `a_fx;
+            float z = double (d) / camera_factor;
+            float x = (c - camera_cx) * z / camera_fx;
             float y = (r - camera_cy) * z / camera_fy;
 
             *(iter_x) = x;
