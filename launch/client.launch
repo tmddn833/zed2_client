@@ -2,7 +2,7 @@
     <arg name="is_bag" default="false"/>
     <arg name="run_edt" default="true"/>
     <arg name="realsense" default="false"/>
-    <arg name ="zed_add" default="false"/>
+    <arg name ="zed_add" default="true"/>
 
     <arg name="param_file" default="$(find zed2_client)/param/forest_dual.yaml"/>
 
@@ -62,7 +62,7 @@
 
         <remap from="~points_masked" to="$(arg point_topic)"/>
         <param name="additional_pcl" value="$(arg realsense)"/>
-        <param name ="zed_add" value="$(arg zed_add)"/>
+        <param name ="additional_depth" value="$(arg zed_add)"/>
     </node>
 
     <node pkg="rviz" type="rviz" name="rviz_zed_client" args="-d $(find zed2_client)/rviz/zed_client.rviz" output="log"
