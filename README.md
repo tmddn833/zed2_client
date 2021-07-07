@@ -48,8 +48,9 @@ Currently, the total process runs at about 10Hz for 1280 x 720 camera setting in
 ```
 cd catkin_ws/src
 git clone https://github.com/stereolabs/zed-ros-wrapper.git
+git clone https://github.com/icsl-Jeon/zed-ros-examples.git
 catkin build zed_interfaces 
-catkin build zed_wrapper
+catkin build rviz_plugin_zed_od
 ```
 
 #### [dynamicEDT3d (my fork version)](https://github.com/icsl-Jeon/octomap)
