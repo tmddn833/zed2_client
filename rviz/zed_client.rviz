@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /Grid1
         - /TF1
         - /TF1/Frames1
         - /ZED_ODOM1/Shape1
@@ -42,7 +43,7 @@ Visualization Manager:
   Class: ""
   Displays:
     - Alpha: 0.5
-      Cell Size: 10
+      Cell Size: 1
       Class: rviz/Grid
       Color: 160; 160; 164
       Enabled: true
@@ -86,14 +87,18 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        bag_object_2:
-          Value: true
         base_link:
           Value: false
+        base_link_frd:
+          Value: true
         map:
+          Value: true
+        map_ned:
           Value: true
         odom:
           Value: false
+        odom_ned:
+          Value: true
         zed2_baro_link:
           Value: false
         zed2_camera_center:
@@ -130,10 +135,12 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
-          bag_object_2:
+          map_ned:
             {}
           odom:
             base_link:
+              base_link_frd:
+                {}
               zed2_camera_center:
                 zed2_baro_link:
                   {}
@@ -156,6 +163,8 @@ Visualization Manager:
                 zed_add_right_camera_frame:
                   zed_add_right_camera_optical_frame:
                     {}
+            odom_ned:
+              {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -206,7 +215,7 @@ Visualization Manager:
       Color Transformer: Intensity
       Decay Time: 0
       Enabled: true
-      Invert Rainbow: true
+      Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
       Name: EDF
@@ -511,7 +520,7 @@ Visualization Manager:
       Value: true
   Enabled: true
   Global Options:
-    Background Color: 238; 238; 236
+    Background Color: 0; 0; 0
     Default Light: true
     Fixed Frame: map
     Frame Rate: 30
@@ -537,7 +546,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 17.788318634033203
+      Distance: 25.210708618164062
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -545,17 +554,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -2.1763055324554443
-        Y: -4.110745429992676
-        Z: -1.1434317457315046e-05
+        X: -3.251150131225586
+        Y: 0.24742209911346436
+        Z: -8.573294508096296e-06
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.20479489862918854
+      Pitch: 0.9097976088523865
       Target Frame: base_link
-      Yaw: 5.303021430969238
+      Yaw: 3.057974100112915
     Saved: ~
 Window Geometry:
   DEPTH:
