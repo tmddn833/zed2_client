@@ -47,7 +47,7 @@ Currently, the total process runs at about 10Hz for 1280 x 720 camera setting in
 #### [zed_interfaces](https://github.com/stereolabs/zed-ros-wrapper/tree/master/zed_interfaces)
 ```
 cd catkin_ws/src
-git clone https://github.com/stereolabs/zed-ros-wrapper.git
+git clone https://github.com/stereolabs/zed-ros-interfaces.git
 git clone https://github.com/icsl-Jeon/zed-ros-examples.git
 catkin build zed_interfaces 
 catkin build rviz_plugin_zed_od
