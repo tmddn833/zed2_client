@@ -46,9 +46,13 @@ Currently, the total process runs at about 10Hz for 1280 x 720 camera setting in
     
 #### [zed_interfaces](https://github.com/stereolabs/zed-ros-wrapper/tree/master/zed_interfaces)
 ```
+sudo apt install ros-${ROS_DISTRO}-catkin 
+sudo apt install python-catkin-tools # or python3-catkin-tools
+
 cd catkin_ws/src
 git clone https://github.com/stereolabs/zed-ros-interfaces.git
 git clone https://github.com/icsl-Jeon/zed-ros-examples.git
+
 catkin build zed_interfaces 
 catkin build rviz_plugin_zed_od
 ```
@@ -56,7 +60,7 @@ catkin build rviz_plugin_zed_od
 #### [dynamicEDT3d (my fork version)](https://github.com/icsl-Jeon/octomap)
 ```
 git clone https://github.com/icsl-Jeon/octomap
-cd dynamicEDT3D
+cd octomap/dynamicEDT3D
 mkdir build && cmake .. 
 sudo make install
 ```
@@ -70,7 +74,7 @@ catkin build octomap_server
 #### This package 
 ```
 cd catkin_ws/src
-git clone /github.com/icsl-Jeon/zed2_client.git
+git clone http://github.com/icsl-Jeon/zed2_client.git
 catkin build zed2_client
 ```
 
