@@ -241,8 +241,8 @@ Client::Client() :nh("~"), it (nh) {
 
     subAdditionalPcl = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh,"/d435/depth/color/points",5);
 
-    if (param.filterObject) {
-        if (param.additionalPcl){
+    if (param.filterObject) { //true
+        if (param.additionalPcl){ // false
 
             subSyncPcl = new message_filters::Synchronizer<CompressedImageMaskBbPclSync>(CompressedImageMaskBbPclSync(param.syncQueueSize),
                                                                                          *this->subRgbComp, *this->subDepthComp,
@@ -251,14 +251,18 @@ Client::Client() :nh("~"), it (nh) {
 
             subSyncPcl->registerCallback(boost::bind(&Client::zedPclSyncCallback, this, _1, _2, _3, _4, _5));
 
-        }else if (param.additionalDepth){
+        }
+        else if (param.additionalDepth){ //false
             subSyncDepth = new message_filters::Synchronizer<CompressedImageMaskBbAddSync>(CompressedImageMaskBbAddSync(param.syncQueueSize ),
                                                                                                *this->subRgbComp, *this->subDepthComp,
                                                                                            *this->subCamInfo, *this->subZedOd,
                                                                                            *this->subDepthCompAdd, *this->subCamInfoAdd);
             subSyncDepth->registerCallback(boost::bind(&Client::zedSyncDepthCallback,this,_1,_2,_3,_4,_5,_6));
 
-        }else{
+        }
+        else{
+
+            //this sync is operating
             subSync = new message_filters::Synchronizer<CompressedImageMaskBbSync>(CompressedImageMaskBbSync(10),
                                                                                          *this->subRgbComp, *this->subDepthComp,
                                                                                          *this->subCamInfo, *this->subZedOd
@@ -277,7 +281,9 @@ Client::Client() :nh("~"), it (nh) {
 
     pubRgbMaskImg =  it.advertise("image_rect_color_masked",1);
     pubDepthMaskImg =  it.advertise("depth_masked",1);
+    //this topic will be used for volume mapping
     pubPointsMasked = nh.advertise<pcl::PointCloud<pcl::PointXYZRGB>>("points_masked",1);
+    //show the removed pcls
     pubPointRemoved = nh.advertise<pcl::PointCloud<pcl::PointXYZRGB>>("points_removed",1);
     pubCurTargetColors = nh.advertise<visualization_msgs::MarkerArray>("target_colors",1);
 

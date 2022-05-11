@@ -38,8 +38,11 @@ include_directories(
 add_executable(test_subscriber test/DepthCompressedSubscriber.cpp  src/Utils.cpp  )
 target_link_libraries(test_subscriber ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 
-add_executable(zed2_client_node main.cpp src/Client.cpp  src/Utils.cpp  src/Client.cpp )
+add_executable(zed2_client_node main.cpp src/Client.cpp src/Utils.cpp)
 target_link_libraries(zed2_client_node   ${catkin_LIBRARIES}  )
+
+add_executable(zed2_client_node2 main2.cpp src/Utils.cpp src/Client2.cpp )
+target_link_libraries(zed2_client_node2   ${catkin_LIBRARIES}  )
 
 add_executable(clock_publisher  test/ClockPublisher.cpp )
 target_link_libraries(clock_publisher   ${catkin_LIBRARIES}  )

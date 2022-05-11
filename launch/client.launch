@@ -2,7 +2,7 @@
     <arg name="is_bag" default="false"/>
     <arg name="run_edt" default="true"/>
     <arg name="realsense" default="false"/>
-    <arg name ="zed_add" default="true"/>
+    <arg name ="zed_add" default="false"/>
 
     <arg name="param_file" default="$(find zed2_client)/param/forest_dual.yaml"/>
 

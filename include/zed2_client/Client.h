@@ -10,25 +10,25 @@
 #define MATCHING_COST_INF 99999 // to reject non-sense matching
 
 
-namespace zed_client{
+namespace zed_client {
 
     typedef message_filters::sync_policies::ApproximateTime<
-            sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,sensor_msgs::CameraInfo ,zed_interfaces::ObjectsStamped>
+            sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::CameraInfo, zed_interfaces::ObjectsStamped>
             CompressedImageMaskBbSync;
 
 
     typedef message_filters::sync_policies::ApproximateTime<
-            sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,sensor_msgs::CameraInfo ,zed_interfaces::ObjectsStamped,
+            sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::CameraInfo, zed_interfaces::ObjectsStamped,
             sensor_msgs::CompressedImage, sensor_msgs::CameraInfo>
             CompressedImageMaskBbAddSync;
 
     typedef message_filters::sync_policies::ApproximateTime<
-            sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,sensor_msgs::CameraInfo ,
+            sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::CameraInfo,
             zed_interfaces::ObjectsStamped, sensor_msgs::PointCloud2>
             CompressedImageMaskBbPclSync;
 
     typedef message_filters::sync_policies::ApproximateTime<
-            sensor_msgs::CompressedImage, sensor_msgs::CompressedImage,sensor_msgs::CameraInfo >
+            sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::CameraInfo>
             CompressedImageSync;
 
     struct DetectedObject {
@@ -38,11 +38,13 @@ namespace zed_client{
         cv::Vec3b bgrColor;
         Pose bbPose_w; // simple pose of bounding box ( z forwarding / origin = bb center)
         virtual cv::Vec3b getHsvColor() const;
+
         virtual bool isPointWithinBB(const Point &pnt_w, bool entireZ, float padding) const;
 
     };
 
-    struct TrackedObject : public DetectedObject{
+    struct TrackedObject :
+            public DetectedObject {
         ros::Time clientLastUpdateStamp;
         float p_heightOffset = 0.5;
         float p_smoothingWeight = 0.8;
@@ -56,21 +58,27 @@ namespace zed_client{
         deque<cv::Vec3b> filteredColorQueue;
 
         TrackedObject() = default;
+
         TrackedObject(DetectedObject obj, int targetIdx,
                       float heightOffSetForFilterPose, float smoothing,
                       int queueSize = 30, int minPntForPoseInference = 10);
-        void update(const DetectedObject& object);
+
+        void update(const DetectedObject &object);
 
         cv::Vec3b getHsvColor() const override;
-        pcl::PointCloud<pcl::PointXYZRGB> getObservationQueuePCL (string worldFrameId);
-        bool getFilteredPoseFromQueue(Pose& pose) const; //! quaternion averaging (position = filterePoint.back)
+
+        pcl::PointCloud<pcl::PointXYZRGB> getObservationQueuePCL(string worldFrameId);
+
+        bool getFilteredPoseFromQueue(Pose &pose) const; //! quaternion averaging (position = filterePoint.back)
         bool isPointWithinBB(const Point &pnt_w, bool entireZ, float padding) const override;
+
         geometry_msgs::PointStamped getLinearPredictionPoint(string worldFrame);
+
         Point getLinearPredictionPoint() const;
     };
 
-    class Client{
-        struct Param{
+    class Client {
+        struct Param {
             int syncQueueSize = 30;
             bool additionalPcl = false;
             bool additionalDepth = false;
@@ -92,7 +100,7 @@ namespace zed_client{
             int pclStride = 5;
             int maskThicknessX = 10;
             int maskThicknessY = 20;
-            bool publishPclAfterTargetLocked= true;
+            bool publishPclAfterTargetLocked = true;
 
             float MW_color = 1.0; // matching weight
             float MW_location = 1.0;
@@ -106,7 +114,7 @@ namespace zed_client{
             int speckleNeighbors = 2;
         };
 
-        struct State{
+        struct State {
             bool isAllTargetsTracked = false; // matched and queues are updated
             Pose T_wc; // world to cam (optical)
             Pose T_cd; // zed cam to d435 pointcloud frame
@@ -131,20 +139,20 @@ namespace zed_client{
         ros::NodeHandle nh;
         ros::NodeHandle nhGlobal;
         image_transport::ImageTransport it;
-        message_filters::Subscriber<sensor_msgs::CompressedImage> * subRgbComp;
-        message_filters::Subscriber<sensor_msgs::CompressedImage> * subDepthComp;
-        message_filters::Subscriber<sensor_msgs::CompressedImage> * subDepthCompAdd;
+        message_filters::Subscriber<sensor_msgs::CompressedImage> *subRgbComp;
+        message_filters::Subscriber<sensor_msgs::CompressedImage> *subDepthComp;
+        message_filters::Subscriber<sensor_msgs::CompressedImage> *subDepthCompAdd;
         message_filters::Subscriber<zed_interfaces::ObjectsStamped> *subZedOd;
         message_filters::Subscriber<sensor_msgs::CameraInfo> *subCamInfo;
         message_filters::Subscriber<sensor_msgs::CameraInfo> *subCamInfoAdd;
         message_filters::Subscriber<sensor_msgs::PointCloud2> *subAdditionalPcl;
-        message_filters::Synchronizer<CompressedImageMaskBbPclSync>* subSyncPcl;
-        message_filters::Synchronizer<CompressedImageMaskBbAddSync>* subSyncDepth;
-        message_filters::Synchronizer<CompressedImageMaskBbSync>* subSync;
-        message_filters::Synchronizer<CompressedImageSync>* subSyncSimple;
+        message_filters::Synchronizer<CompressedImageMaskBbPclSync> *subSyncPcl;
+        message_filters::Synchronizer<CompressedImageMaskBbAddSync> *subSyncDepth;
+        message_filters::Synchronizer<CompressedImageMaskBbSync> *subSync;
+        message_filters::Synchronizer<CompressedImageSync> *subSyncSimple;
 
-        tf::TransformListener* tfListenerPtr;
-        tf::TransformBroadcaster* tfBroadcasterPtr;
+        tf::TransformListener *tfListenerPtr;
+        tf::TransformBroadcaster *tfBroadcasterPtr;
 
         image_transport::Publisher pubRgbMaskImg;
         image_transport::Publisher pubDepthMaskImg;
@@ -156,18 +164,18 @@ namespace zed_client{
         vector<ros::Publisher> pubTargetLinearPrediction;
 
         ros::Timer timerCaller;
-        ros::AsyncSpinner* targetIdSpinnerPtr;
+        ros::AsyncSpinner *targetIdSpinnerPtr;
         ros::CallbackQueue observationCallbackQueue;
 
 
-        float matchingCost (const TrackedObject& priorObj,
-                            const DetectedObject& newObj) const;
+        float matchingCost(const TrackedObject &priorObj,
+                           const DetectedObject &newObj) const;
 
         void syncSubRoutine(const sensor_msgs::CompressedImageConstPtr &,
-                                const sensor_msgs::CompressedImageConstPtr &,
-                                const sensor_msgs::CameraInfoConstPtr &,
-                                const zed_interfaces::ObjectsStampedConstPtr &,
-                                const sensor_msgs::PointCloud2ConstPtr &);
+                            const sensor_msgs::CompressedImageConstPtr &,
+                            const sensor_msgs::CameraInfoConstPtr &,
+                            const zed_interfaces::ObjectsStampedConstPtr &,
+                            const sensor_msgs::PointCloud2ConstPtr &);
 
         void zedPclSyncCallback(const sensor_msgs::CompressedImageConstPtr &,
                                 const sensor_msgs::CompressedImageConstPtr &,
@@ -176,18 +184,18 @@ namespace zed_client{
                                 const sensor_msgs::PointCloud2ConstPtr &);
 
         void zedSyncCallback(const sensor_msgs::CompressedImageConstPtr &,
-                                const sensor_msgs::CompressedImageConstPtr &,
-                                const sensor_msgs::CameraInfoConstPtr &,
-                                const zed_interfaces::ObjectsStampedConstPtr &
-                                );
+                             const sensor_msgs::CompressedImageConstPtr &,
+                             const sensor_msgs::CameraInfoConstPtr &,
+                             const zed_interfaces::ObjectsStampedConstPtr &
+        );
 
-        void zedSyncDepthCallback(  const sensor_msgs::CompressedImageConstPtr & rgbCompPtr,
-                                    const sensor_msgs::CompressedImageConstPtr & depthCompPtr ,
-                                    const sensor_msgs::CameraInfoConstPtr & camInfoPtr,
-                                    const zed_interfaces::ObjectsStampedConstPtr & objPtr,
-                                    const sensor_msgs::CompressedImageConstPtr & depthCompAddPtr,
-                                    const sensor_msgs::CameraInfoConstPtr & camInfoAddPtr
-                                 );
+        void zedSyncDepthCallback(const sensor_msgs::CompressedImageConstPtr &rgbCompPtr,
+                                  const sensor_msgs::CompressedImageConstPtr &depthCompPtr,
+                                  const sensor_msgs::CameraInfoConstPtr &camInfoPtr,
+                                  const zed_interfaces::ObjectsStampedConstPtr &objPtr,
+                                  const sensor_msgs::CompressedImageConstPtr &depthCompAddPtr,
+                                  const sensor_msgs::CameraInfoConstPtr &camInfoAddPtr
+        );
 
 
         void zedSyncCallback(const sensor_msgs::CompressedImageConstPtr &,
@@ -195,7 +203,8 @@ namespace zed_client{
                              const sensor_msgs::CameraInfoConstPtr &);
 
         // timer callback
-        void targetIdCallback(const ros::TimerEvent& event);
+        void targetIdCallback(const ros::TimerEvent &event);
+
     public:
         Client();
 
@@ -204,9 +213,6 @@ namespace zed_client{
 
 
 }
-
-
-
 
 
 #endif //ZED2_CLIENT_CLIENT_H

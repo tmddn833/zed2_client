@@ -15,7 +15,7 @@ Panels:
         - /TargetIdendifier1
         - /TargetIdendifier1/PCL_OBJECTS_REMOVAL1
       Splitter Ratio: 0.4683544337749481
-    Tree Height: 874
+    Tree Height: 444
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -81,28 +81,47 @@ Visualization Manager:
       Name: Axes
       Radius: 0.10000000149011612
       Reference Frame: <Fixed Frame>
+      Show Trail: false
       Value: true
     - Class: rviz/TF
       Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        bag_object_0:
+          Value: true
+        bag_object_10:
+          Value: true
+        bag_object_2:
+          Value: true
+        bag_object_3:
+          Value: true
+        bag_object_4:
+          Value: true
+        bag_object_5:
+          Value: true
+        bag_object_6:
+          Value: true
+        bag_object_7:
+          Value: true
+        bag_target_0_filtered:
+          Value: true
+        bag_target_1_filtered:
+          Value: true
         base_link:
           Value: false
-        base_link_frd:
-          Value: true
         map:
-          Value: true
-        map_ned:
           Value: true
         odom:
           Value: false
-        odom_ned:
-          Value: true
         zed2_baro_link:
           Value: false
+        zed2_base_link:
+          Value: true
         zed2_camera_center:
           Value: false
+        zed2_imu_link:
+          Value: true
         zed2_left_camera_frame:
           Value: false
         zed2_left_camera_optical_frame:
@@ -117,16 +136,6 @@ Visualization Manager:
           Value: false
         zed2_temp_right_link:
           Value: false
-        zed_add_camera_center:
-          Value: false
-        zed_add_left_camera_frame:
-          Value: false
-        zed_add_left_camera_optical_frame:
-          Value: false
-        zed_add_right_camera_frame:
-          Value: false
-        zed_add_right_camera_optical_frame:
-          Value: false
       Marker Alpha: 1
       Marker Scale: 3
       Name: TF
@@ -135,36 +144,46 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
-          map_ned:
+          bag_object_0:
+            {}
+          bag_object_10:
+            {}
+          bag_object_2:
+            {}
+          bag_object_3:
+            {}
+          bag_object_4:
+            {}
+          bag_object_5:
+            {}
+          bag_object_6:
+            {}
+          bag_object_7:
+            {}
+          bag_target_0_filtered:
+            {}
+          bag_target_1_filtered:
             {}
           odom:
             base_link:
-              base_link_frd:
-                {}
-              zed2_camera_center:
-                zed2_baro_link:
-                  {}
-                zed2_left_camera_frame:
-                  zed2_left_camera_optical_frame:
+              zed2_base_link:
+                zed2_camera_center:
+                  zed2_baro_link:
                     {}
-                  zed2_temp_left_link:
+                  zed2_left_camera_frame:
+                    zed2_imu_link:
+                      {}
+                    zed2_left_camera_optical_frame:
+                      {}
+                    zed2_temp_left_link:
+                      {}
+                  zed2_mag_link:
                     {}
-                zed2_mag_link:
-                  {}
-                zed2_right_camera_frame:
-                  zed2_right_camera_optical_frame:
-                    {}
-                  zed2_temp_right_link:
-                    {}
-              zed_add_camera_center:
-                zed_add_left_camera_frame:
-                  zed_add_left_camera_optical_frame:
-                    {}
-                zed_add_right_camera_frame:
-                  zed_add_right_camera_optical_frame:
-                    {}
-            odom_ned:
-              {}
+                  zed2_right_camera_frame:
+                    zed2_right_camera_optical_frame:
+                      {}
+                    zed2_temp_right_link:
+                      {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -346,7 +365,7 @@ Visualization Manager:
           Channel Name: intensity
           Class: rviz/PointCloud2
           Color: 255; 255; 255
-          Color Transformer: RGB8
+          Color Transformer: Intensity
           Decay Time: 0
           Enabled: true
           Invert Rainbow: false
@@ -424,7 +443,7 @@ Visualization Manager:
           Channel Name: intensity
           Class: rviz/PointCloud2
           Color: 255; 255; 255
-          Color Transformer: RGB8
+          Color Transformer: Intensity
           Decay Time: 0
           Enabled: true
           Invert Rainbow: false
@@ -452,7 +471,7 @@ Visualization Manager:
           Channel Name: intensity
           Class: rviz/PointCloud2
           Color: 255; 255; 255
-          Color Transformer: RGB8
+          Color Transformer: Intensity
           Decay Time: 0
           Enabled: true
           Invert Rainbow: false
@@ -495,7 +514,7 @@ Visualization Manager:
       Enabled: true
       Name: TargetIdendifier
     - Class: rviz/Image
-      Enabled: true
+      Enabled: false
       Image Topic: /zed_client_node/image_rect_color_masked
       Max Value: 1
       Median window: 5
@@ -505,7 +524,7 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: compressed
       Unreliable: false
-      Value: true
+      Value: false
     - Class: rviz/Image
       Enabled: true
       Image Topic: /zed_client_node/depth_masked
@@ -546,7 +565,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 25.210708618164062
+      Distance: 20.411052703857422
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -554,27 +573,27 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -3.251150131225586
-        Y: 0.24742209911346436
-        Z: -8.573294508096296e-06
+        X: 0.31044626235961914
+        Y: -0.7573733329772949
+        Z: -7.619620191690046e-06
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9097976088523865
+      Pitch: 0.31979623436927795
       Target Frame: base_link
-      Yaw: 3.057974100112915
+      Yaw: 2.8279874324798584
     Saved: ~
 Window Geometry:
   DEPTH:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 1088
+  Height: 974
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001bf000003a7fc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000003a7000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000002400440045005000540048005f004400450043004f004d00500052004500530053004500440000000385000000320000000000000000fb00000020005200470042005f004400450043004f004d00500052004500530053004500440000000397000000200000000000000000fb0000001c005200470042005f0043004f004d005000520045005300530045004400000002390000017e0000000000000000fb0000002000440045005000540048005f0043004f004d005000520045005300530045004400000002980000011f000000000000000000000001000002d6000003a7fc0200000004fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00440045005000540048010000003d000001d40000001600fffffffc00000217000001cd000000c10100001cfa000000000100000002fb000000060052004700420100000000ffffffff0000005100fffffffb0000000a0056006900650077007301000006710000010f0000010000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007b800000039fc0100000002fb0000000800540069006d00650100000000000007b8000002eb00fffffffb0000000800540069006d0065010000000000000450000000000000000000000317000003a700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001bf00000335fc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000001f9000000c900fffffffc0000023c00000136000000330100001cfa000000000100000002fb0000000a004400450050005400480100000000ffffffff0000006400fffffffb000000060052004700420100000000000001bf0000005100fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000002400440045005000540048005f004400450043004f004d00500052004500530053004500440000000385000000320000000000000000fb00000020005200470042005f004400450043004f004d00500052004500530053004500440000000397000000200000000000000000fb0000001c005200470042005f0043004f004d005000520045005300530045004400000002390000017e0000000000000000fb0000002000440045005000540048005f0043004f004d005000520045005300530045004400000002980000011f000000000000000000000001000002bb00000335fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d00000335000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000078000000039fc0100000002fb0000000800540069006d0065010000000000000780000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000002fa0000033500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   RGB:
     collapsed: false
   Selection:
@@ -585,6 +604,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1976
-  X: 72
-  Y: 27
+  Width: 1920
+  X: 0
+  Y: 492
